@@ -1,3 +1,4 @@
 synthetic_accessibility/SMILES_ChEMBL_ALL.csv filter=lfs diff=lfs merge=lfs -text
 dim_red/datasets/* filter=lfs diff=lfs merge=lfs -text
 data/libraries/generalistic_eos7d58.csv filter=lfs diff=lfs merge=lfs -text
+data/libraries/generalistic_eos7m30.csv filter=lfs diff=lfs merge=lfs -text
