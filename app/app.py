@@ -181,13 +181,13 @@ else:
 with st.sidebar:
     st.image(
         os.path.join(ROOT, "..", "assets", "schmidt_sciences_logo.png"),
-        use_column_width=True,
+        use_container_width=True,
         caption="Workshop supported by AI2050 Schmidt Sciences"
     )
 
 with st.sidebar:
     st.image(
         os.path.join(ROOT, "..", "assets", "ersilia_brand.png"),
-        use_column_width=True,
+        use_container_width=True,
         caption="Designed with ❤️ by the Ersilia Open Source Initiative"
     )
