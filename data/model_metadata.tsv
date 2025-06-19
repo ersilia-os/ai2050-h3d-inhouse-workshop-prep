@@ -1,0 +1,9 @@
+model_id	slug	title
+eos3804	chemprop-abaumannii	Inhibition of Acinetobacter baumannii growth
+eos42ez	antibiotics-ai-cytotox	Human cytotoxicity endpoints
+eos2db3	chemical-space-projections-chemdiv	Chemical space 2D projections against ChemDiv
+eos18ie	antibiotics-ai-saureus	Antibiotic activity prediction against Staphylococcus aureus
+eos37l0	chembl-kpneumoniae	Klebsiella pneumoniae activity prediction
+eos5dti	chembl-abaumannii	Acinetobacter baumannii activity prediction
+eos2m0f	chembl-saureus	Staphylococcus aureus activity prediction
+eos7m30	admet-ai-exact	ADMET properties prediction
