@@ -23,6 +23,8 @@ st.markdown("This is a simple app to merge datasets from the [Ersilia Model Hub]
 
 if 'datasets' not in st.session_state:
     st.session_state.datasets = {}
+if 'files_uploaded' not in st.session_state:
+    st.session_state.files_uploaded = False
 
 st.cache_data()
 def get_models_metadata():
@@ -41,12 +43,6 @@ st.sidebar.markdown("""
 4. Apply filters based on secondary columns.
 5. Visualy inspect the molecules.
 """)
-
-uploaded_files = st.sidebar.file_uploader(
-    "Choose your CSV files",
-    type=["csv"],
-    accept_multiple_files=True
-)
 
 @st.cache_data()
 def df_columns():
@@ -81,20 +77,40 @@ def resolve_model_id_of_df(df):
     else:
         return None, None
 
-if uploaded_files:
-    uploaded_data = []
-    uploaded_labels = []
-    for uploaded_file in uploaded_files:
-        if uploaded_file.name not in st.session_state.datasets:
-            df = pd.read_csv(uploaded_file)
-            label, df = resolve_model_id_of_df(df)
-            if label is None:
-                st.sidebar.error(f"Could not resolve file type '{uploaded_file.name}'. Please ensure the file has the correct format.")
-                continue
-            st.session_state.datasets[uploaded_file.name] = (label, df)
-            st.sidebar.success(f"File '{uploaded_file.name}' uploaded successfully!")
-        else:
-            st.sidebar.warning(f"File '{uploaded_file.name}' already exists in the session state.")
+if not st.session_state.files_uploaded:
+
+    uploaded_files = st.sidebar.file_uploader(
+        "Choose your CSV files",
+        type=["csv"],
+        accept_multiple_files=True
+    )
+
+    if uploaded_files and st.sidebar.button("Upload files"):
+        uploaded_data = []
+        uploaded_labels = []
+        if len(uploaded_files) > 5:
+            st.sidebar.warning("You can only upload up to 5 files at a time. Please remove some files and try again. For now, only the first 5 files are processed.")
+        for uploaded_file in uploaded_files:
+            if uploaded_file.name not in st.session_state.datasets:
+                df = pd.read_csv(uploaded_file)
+                label, df = resolve_model_id_of_df(df)
+                if label is None:
+                    st.sidebar.error(f"Could not resolve file type '{uploaded_file.name}'. Please ensure the file has the correct format.")
+                    continue
+                st.session_state.datasets[uploaded_file.name] = (label, df)
+                st.sidebar.success(f"File '{uploaded_file.name}' uploaded successfully!")
+            else:
+                st.sidebar.warning(f"File '{uploaded_file.name}' already exists in the session state.")
+        st.session_state.files_uploaded = True
+
+else:
+
+    st.sidebar.success("Files already uploaded.")
+    if st.sidebar.button("Reset uploads"):
+        st.session_state.datasets.clear()
+        st.session_state.files_uploaded = False
+        st.rerun()
+
 
 if not st.session_state.datasets:
     st.sidebar.info("No datasets uploaded yet. Please upload CSV files to merge datasets from the Ersilia Model Hub.")
