@@ -4,7 +4,6 @@ import pandas as pd
 import numpy as np
 from rdkit import Chem
 from rdkit.Chem import Draw
-from PIL import Image
 import io
 
 st.set_page_config(
@@ -19,8 +18,8 @@ DATA_DIR = os.path.join(ROOT, "..", "data")
 
 MAX_COLUMNS = 10
 
-st.title("🤖 Merge datasets from the Ersilia Model Hub")
-st.markdown("This is a simple app to merge datasets from the Ersilia Model Hub. Feel free to use Excel or any specialized cheminformatics tool for more advanced usage")
+st.title("🚀 AI2050 Workshop at H3D - Sessions 2.3 & 2.4")
+st.markdown("This is a simple app to merge datasets from the [Ersilia Model Hub](https://ersilia.io/model-hub). Feel free to use Excel or any specialized cheminformatics tool for a more advanced analysis!")
 
 if 'datasets' not in st.session_state:
     st.session_state.datasets = {}
@@ -34,7 +33,14 @@ def get_models_metadata():
 
 id2slug, id2title = get_models_metadata()
 
-st.sidebar.title("Upload Multiple Datasets")
+st.sidebar.title("Instructions")
+st.sidebar.markdown("""
+1. Upload your CSV files.
+2. Select your columns of interest.
+3. Rank by the primary column of interest.
+4. Apply filters based on secondary columns.
+5. Visualy inspect the molecules.
+""")
 
 uploaded_files = st.sidebar.file_uploader(
     "Choose your CSV files",
@@ -129,6 +135,12 @@ else:
             mol_dict = molecule_dictionary(datasets["input"])
 
             df = datasets["input"].copy()
+            identifiers = ["cpd_{0}".format(i+1) for i in range(len(df))]
+            smi2id = {}
+            for i, smiles in enumerate(df["smiles"].tolist()):
+                smi2id[smiles] = identifiers[i]
+            df["cpd_num"] = identifiers
+            df = df[["cpd_num", "smiles"]]
             for col in selected_columns:
                 model_id = col.split(" - ")[0]
                 series = datasets[model_id][col]
@@ -137,7 +149,7 @@ else:
             mol_dict = molecule_dictionary(df)
 
             df_ = df.copy()
-            df_ = df_[["smiles"] + selected_columns]
+            df_ = df_[["cpd_num", "smiles"] + selected_columns]
 
             cols = st.columns(int(MAX_COLUMNS/2))
             for i, column in enumerate(selected_columns[:int(MAX_COLUMNS/2)]):
@@ -154,11 +166,17 @@ else:
                 df_ = df_[df_[column] >= min_val]
                 df_ = df_[df_[column] <= max_val]
 
+            
             st.dataframe(df_)
 
             st.subheader("Selected Molecules (up to 25)")
 
-            smiles_list = df_["smiles"].tolist()
+            smiles_list = st.text_area("Paste your SMILES here (one per line)", height=200, key="smiles_input").split("\n")
+            if len(smiles_list) > 25:
+                st.warning("You can only display up to 25 molecules. The first 25 will be displayed.")
+                smiles_list = smiles_list[:25]
+            
+            cpd_nums = [smi2id[smiles] for smiles in smiles_list]
             mols = [mol_dict[smiles] for smiles in smiles_list]
 
             def mols_to_grid_image(mols, molsPerRow=5, subImgSize=(300,300)):
@@ -166,7 +184,7 @@ else:
                     mols, 
                     molsPerRow=molsPerRow, 
                     subImgSize=subImgSize, 
-                    legends=[str(i) for i in range(len(mols))]
+                    legends=cpd_nums[:25]
                 )
                 return img
 
