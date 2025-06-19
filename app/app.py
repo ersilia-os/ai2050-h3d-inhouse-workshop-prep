@@ -175,26 +175,36 @@ else:
             if len(smiles_list) > 25:
                 st.warning("You can only display up to 25 molecules. The first 25 will be displayed.")
                 smiles_list = smiles_list[:25]
-            
-            cpd_nums = [smi2id[smiles] for smiles in smiles_list]
-            mols = [mol_dict[smiles] for smiles in smiles_list]
+            smiles_list = [smiles.strip() for smiles in smiles_list if smiles != ""]
 
-            def mols_to_grid_image(mols, molsPerRow=5, subImgSize=(300,300)):
-                img = Draw.MolsToGridImage(
-                    mols, 
-                    molsPerRow=molsPerRow, 
-                    subImgSize=subImgSize, 
-                    legends=cpd_nums[:25]
-                )
-                return img
-
-            if mols:
-                grid_img = mols_to_grid_image(mols[:25]) 
-                buf = io.BytesIO()
-                grid_img.save(buf, format="PNG")
-                st.image(buf.getvalue())
+            if not smiles_list:
+                st.warning("No SMILES provided. Please paste your SMILES in the text area above.")
             else:
-                st.info("No molecules to display.")
+                mols = []
+                cpd_nums = []
+                for smiles in smiles_list:
+                    if smiles not in mol_dict:
+                        st.warning(f"SMILES '{smiles}' not found in the dataset. Please check your input.")
+                        continue
+                    mols += [mol_dict[smiles]]
+                    cpd_nums += [smi2id[smiles]]
+
+                def mols_to_grid_image(mols, molsPerRow=5, subImgSize=(300,300)):
+                    img = Draw.MolsToGridImage(
+                        mols, 
+                        molsPerRow=molsPerRow, 
+                        subImgSize=subImgSize, 
+                        legends=cpd_nums[:25]
+                    )
+                    return img
+
+                if mols:
+                    grid_img = mols_to_grid_image(mols[:25]) 
+                    buf = io.BytesIO()
+                    grid_img.save(buf, format="PNG")
+                    st.image(buf.getvalue())
+                else:
+                    st.info("No molecules to display.")
 
 with st.sidebar:
     st.image(
